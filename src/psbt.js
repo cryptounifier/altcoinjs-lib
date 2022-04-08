@@ -142,8 +142,7 @@ class Psbt {
     });
   }
   enableUnsafeSignSegwit() {
-    this.__CACHE.__UNSAFE_SIGN_NONSEGWIT = true
-
+    this.__CACHE.__UNSAFE_SIGN_NONSEGWIT = true;
     return this;
   }
   combine(...those) {
@@ -685,9 +684,9 @@ function canFinalize(input, script, scriptType) {
   }
 }
 function checkCache(cache) {
-  // if (cache.__UNSAFE_SIGN_NONSEGWIT !== false) {
-  //   throw new Error('Not BIP174 compliant, can not export');
-  // }
+  if (cache.__UNSAFE_SIGN_NONSEGWIT !== false) {
+    throw new Error('Not BIP174 compliant, can not export');
+  }
 }
 function hasSigs(neededSigs, partialSig, pubkeys) {
   if (!partialSig) return false;
@@ -1003,16 +1002,16 @@ function getHashForSig(inputIndex, input, cache, forValidate, sighashTypes) {
         `Input #${inputIndex} has witnessUtxo but non-segwit script: ` +
           `${meaningfulScript.toString('hex')}`,
       );
-    // if (!forValidate && cache.__UNSAFE_SIGN_NONSEGWIT !== false)
-    //   console.warn(
-    //     'Warning: Signing non-segwit inputs without the full parent transaction ' +
-    //       'means there is a chance that a miner could feed you incorrect information ' +
-    //       "to trick you into paying large fees. This behavior is the same as Psbt's predecesor " +
-    //       '(TransactionBuilder - now removed) when signing non-segwit scripts. You are not ' +
-    //       'able to export this Psbt with toBuffer|toBase64|toHex since it is not ' +
-    //       'BIP174 compliant.\n*********************\nPROCEED WITH CAUTION!\n' +
-    //       '*********************',
-    //   );
+    if (!forValidate && cache.__UNSAFE_SIGN_NONSEGWIT !== false)
+      console.warn(
+        'Warning: Signing non-segwit inputs without the full parent transaction ' +
+          'means there is a chance that a miner could feed you incorrect information ' +
+          "to trick you into paying large fees. This behavior is the same as Psbt's predecesor " +
+          '(TransactionBuilder - now removed) when signing non-segwit scripts. You are not ' +
+          'able to export this Psbt with toBuffer|toBase64|toHex since it is not ' +
+          'BIP174 compliant.\n*********************\nPROCEED WITH CAUTION!\n' +
+          '*********************',
+      );
     hash = unsignedTx.hashForSignature(
       inputIndex,
       meaningfulScript,

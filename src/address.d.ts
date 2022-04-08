@@ -9,7 +9,7 @@ export interface Bech32Result {
     prefix: string;
     data: Buffer;
 }
-export declare function fromBase58Check(address: string): Base58CheckResult;
+export declare function fromBase58Check(address: string, twoBytesVersion?: boolean): Base58CheckResult;
 export declare function fromBech32(address: string): Bech32Result;
 export declare function toBase58Check(hash: Buffer, version: number): string;
 export declare function toBech32(data: Buffer, version: number, prefix: string): string;

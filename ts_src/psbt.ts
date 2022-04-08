@@ -197,6 +197,12 @@ export class Psbt {
     });
   }
 
+  enableUnsafeSignSegwit(): this {
+    this.__CACHE.__UNSAFE_SIGN_NONSEGWIT = true
+
+    return this;
+  }
+
   combine(...those: Psbt[]): this {
     this.data.combine(...those.map(o => o.data));
     return this;

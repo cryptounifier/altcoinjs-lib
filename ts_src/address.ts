@@ -54,15 +54,15 @@ function _toFutureSegwitAddress(output: Buffer, network: Network): string {
   return toBech32(data, version, network.bech32);
 }
 
-export function fromBase58Check(address: string): Base58CheckResult {
+export function fromBase58Check(address: string, twoBytesVersion:boolean = false): Base58CheckResult {
   const payload = bs58check.decode(address);
 
   // TODO: 4.0.0, move to "toOutputScript"
   if (payload.length < 21) throw new TypeError(address + ' is too short');
   if (payload.length > 21) throw new TypeError(address + ' is too long');
-
-  const version = payload.readUInt8(0);
-  const hash = payload.slice(1);
+  
+  const version = (twoBytesVersion) ? payload.readUInt16BE(0) : payload.readUInt8(0);
+  const hash = payload.slice((twoBytesVersion) ? 2 : 1);
 
   return { version, hash };
 }
@@ -144,7 +144,7 @@ export function toOutputScript(address: string, network?: Network): Buffer {
   let decodeBase58: Base58CheckResult | undefined;
   let decodeBech32: Bech32Result | undefined;
   try {
-    decodeBase58 = fromBase58Check(address);
+    decodeBase58 = fromBase58Check(address, network.pubKeyHash > 255 && network.scriptHash > 255);
   } catch (e) {}
 
   if (decodeBase58) {

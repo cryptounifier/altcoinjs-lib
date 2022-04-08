@@ -36,13 +36,15 @@ function _toFutureSegwitAddress(output, network) {
   console.warn(FUTURE_SEGWIT_VERSION_WARNING);
   return toBech32(data, version, network.bech32);
 }
-function fromBase58Check(address) {
+function fromBase58Check(address, twoBytesVersion = false) {
   const payload = bs58check.decode(address);
   // TODO: 4.0.0, move to "toOutputScript"
   if (payload.length < 21) throw new TypeError(address + ' is too short');
   if (payload.length > 21) throw new TypeError(address + ' is too long');
-  const version = payload.readUInt8(0);
-  const hash = payload.slice(1);
+  const version = twoBytesVersion
+    ? payload.readUInt16BE(0)
+    : payload.readUInt8(0);
+  const hash = payload.slice(twoBytesVersion ? 2 : 1);
   return { version, hash };
 }
 exports.fromBase58Check = fromBase58Check;
@@ -110,7 +112,10 @@ function toOutputScript(address, network) {
   let decodeBase58;
   let decodeBech32;
   try {
-    decodeBase58 = fromBase58Check(address);
+    decodeBase58 = fromBase58Check(
+      address,
+      network.pubKeyHash > 255 && network.scriptHash > 255,
+    );
   } catch (e) {}
   if (decodeBase58) {
     if (decodeBase58.version === network.pubKeyHash)

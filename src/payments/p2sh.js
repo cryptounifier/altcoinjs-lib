@@ -49,8 +49,11 @@ function p2sh(a, opts) {
   const o = { network };
   const _address = lazy.value(() => {
     const payload = bs58check.decode(a.address);
-    const version = payload.readUInt8(0);
-    const hash = payload.slice(1);
+    const version =
+      o.network.scriptHash > 255
+        ? payload.readUInt16BE(0)
+        : payload.readUInt8(0);
+    const hash = payload.slice(o.network.scriptHash > 255 ? 2 : 1);
     return { version, hash };
   });
   const _chunks = lazy.value(() => {
@@ -68,9 +71,13 @@ function p2sh(a, opts) {
   // output dependents
   lazy.prop(o, 'address', () => {
     if (!o.hash) return;
-    const payload = Buffer.allocUnsafe(21);
-    payload.writeUInt8(o.network.scriptHash, 0);
-    o.hash.copy(payload, 1);
+    const payload = Buffer.allocUnsafe(o.network.scriptHash > 255 ? 22 : 21);
+    if (o.network.scriptHash > 255) {
+      payload.writeUInt16BE(o.network.scriptHash, 0);
+    } else {
+      payload.writeUInt8(o.network.scriptHash, 0);
+    }
+    o.hash.copy(payload, o.network.scriptHash > 255 ? 2 : 1);
     return bs58check.encode(payload);
   });
   lazy.prop(o, 'hash', () => {
