@@ -141,6 +141,11 @@ class Psbt {
       };
     });
   }
+  enableUnsafeSignSegwit() {
+    this.__CACHE.__UNSAFE_SIGN_NONSEGWIT = true
+
+    return this;
+  }
   combine(...those) {
     this.data.combine(...those.map(o => o.data));
     return this;
@@ -680,9 +685,9 @@ function canFinalize(input, script, scriptType) {
   }
 }
 function checkCache(cache) {
-  if (cache.__UNSAFE_SIGN_NONSEGWIT !== false) {
-    throw new Error('Not BIP174 compliant, can not export');
-  }
+  // if (cache.__UNSAFE_SIGN_NONSEGWIT !== false) {
+  //   throw new Error('Not BIP174 compliant, can not export');
+  // }
 }
 function hasSigs(neededSigs, partialSig, pubkeys) {
   if (!partialSig) return false;
