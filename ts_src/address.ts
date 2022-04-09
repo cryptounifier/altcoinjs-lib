@@ -58,8 +58,8 @@ export function fromBase58Check(address: string, twoBytesVersion:boolean = false
   const payload = bs58check.decode(address);
 
   // TODO: 4.0.0, move to "toOutputScript"
-  if (payload.length < 21) throw new TypeError(address + ' is too short');
-  if (payload.length > 21) throw new TypeError(address + ' is too long');
+  if (payload.length < ((twoBytesVersion) ? 22 : 21)) throw new TypeError(address + ' is too short');
+  if (payload.length > ((twoBytesVersion) ? 22 : 21)) throw new TypeError(address + ' is too long');
   
   const version = (twoBytesVersion) ? payload.readUInt16BE(0) : payload.readUInt8(0);
   const hash = payload.slice((twoBytesVersion) ? 2 : 1);
@@ -93,11 +93,16 @@ export function fromBech32(address: string): Bech32Result {
 }
 
 export function toBase58Check(hash: Buffer, version: number): string {
-  typeforce(types.tuple(types.Hash160bit, types.UInt8), arguments);
+  typeforce(types.tuple(types.Hash160bit, types.Number), arguments);
 
-  const payload = Buffer.allocUnsafe(21);
-  payload.writeUInt8(version, 0);
-  hash.copy(payload, 1);
+  const payload = Buffer.allocUnsafe((version > 255) ? 22 : 21);
+  if(version > 255) {
+    payload.writeUInt16BE(version, 0);
+  } else {
+    payload.writeUInt8(version, 0);
+  }
+  
+  hash.copy(payload, (version > 255) ? 2 : 1);
 
   return bs58check.encode(payload);
 }
